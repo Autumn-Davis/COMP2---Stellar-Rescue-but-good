@@ -35,7 +35,7 @@ function drawStartScreen() {
   textFont("Times New Roman");
   fill(200);
   textSize(20);
-  text("Help Fergus escape the Void Reapers.\nClick and hold to move.\nStay away from the void!", width / 2, height / 2.5);
+  text("Help FERGUS the little green alien escape the evil VOID REAPERS and get his dog back!\nClick and hold to move.\nStay away from the VOID SHIP, and hide behind meteors to take a break.\nMake sure to KEEP AN EYE ON YOUR AIR LEVELS!\n", width / 2, height / 2.5);
   pop();
 
   // Button
