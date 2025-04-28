@@ -2,17 +2,40 @@ let posI;
 let vel;
 let k;
 
+let dogPos;
+let dogVel;
+
 let gameState = "start";
+
+let meteors = [];
+const NUM_METEORS = 6;
+
+let isHidden = false;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+
   frameRate(60)
+
   posI = createVector(50, 50); //spaceship
   vel = createVector(1.5, 1.5);
   print(vel.mag());
   vel.setMag(8);
+
   //noCursor();
+
   k=0;
+
+  for (let i = 0; i < NUM_METEORS; i++) {
+    let x = random(150, width - 150);
+    let y = random(150, height - 150);
+    let w = random(50, 100);
+    let h = random(50, 100);
+    meteors.push({ x, y, w, h });
+  }
+
+  dogPos = createVector(width / 2, height / 2);
+  dogVel = createVector(random(1, 2), random(1, 2));
 }
 
 
@@ -76,6 +99,18 @@ function draw() {
     noCursor();
     background(26, 40, 40);
     moveSpaceship();
+    // to check if Fergus is hidden behind any meteor:
+    isHidden = false;
+    let fergusW = 50; // ish width of Fergus's ship
+    let fergusH = 40; // ish height of Fergus's ship
+
+    for (let meteor of meteors) {
+      if (isCollidingAABB(mouseX - fergusW/2, mouseY - fergusH/2, fergusW, fergusH, meteor.x, meteor.y, meteor.w, meteor.h)) {
+        isHidden = true;
+        break; 
+      }
+    }
+
     drawWinGame();
 
     if (mouseIsPressed) {
@@ -89,9 +124,23 @@ function draw() {
       drawFergusShip();
     } else {
       drawStarfield1();
+      drawMeteors();
       drawText();
       drawSpaceship();
+
+      if (isHidden) {
+        push();
+        textAlign(CENTER);
+        fill(200, 255, 200);
+        textSize(24);
+        text("You are hidden!", mouseX, mouseY - 50);
+        pop();
+      }
+
       drawVoid();
+
+      moveDog();
+      drawDog();
     }
   }
 }
@@ -241,6 +290,24 @@ function drawStarfield1() {
   }
 }
 
+function drawMeteors() {
+  for (let meteor of meteors) {
+    push();
+    fill(84, 61, 40);
+    noStroke();
+    ellipse(meteor.x + meteor.w / 2, meteor.y + meteor.h / 2, meteor.w, meteor.h);
+    pop();
+  }
+}
+
+function isCollidingAABB(ax, ay, aw, ah, bx, by, bw, bh) {
+  return (
+    ax < bx + bw &&
+    ax + aw > bx &&
+    ay < by + bh &&
+    ay + ah > by
+  );
+}
 
 function drawStar(x, y, radI, radO) {
   push();
@@ -311,15 +378,31 @@ function drawSpaceship() {
 }
 
 function moveSpaceship() {
-    if (mouseIsPressed) {
-      let toMouse = createVector(mouseX - posI.x, mouseY - posI.y).setMag(8);
-      vel = toMouse;
-    } else {
-      let toHome = createVector(50 - posI.x, 50 - posI.y).setMag(3);
-      vel = toHome;
-    }
-    posI.add(vel);
+  if (isHidden) {
+    // If hidden, the void ship moves slowly back toward home
+    let toHome = createVector(50 - posI.x, 50 - posI.y).setMag(5);
+    vel = toHome;
+  } else if (mouseIsPressed) {
+    let toMouse = createVector(mouseX - posI.x, mouseY - posI.y).setMag(14);
+    vel = toMouse;
+  } else {
+    let toHome = createVector(50 - posI.x, 50 - posI.y).setMag(5);
+    vel = toHome;
   }
+  posI.add(vel);
+}
+
+function moveDog() {
+  dogPos.add(dogVel);
+
+  // Bounce off edges
+  if (dogPos.x < 0 || dogPos.x > width) {
+    dogVel.x *= -1;
+  }
+  if (dogPos.y < 0 || dogPos.y > height) {
+    dogVel.y *= -1;
+  }
+}
 
 function drawVoid() {
   push();
@@ -353,6 +436,28 @@ function drawFergus() {
     ellipse(mouseX, mouseY - 6, 10, 10);
     pop();
 }
+
+
+function drawDog() {
+  push();
+  beginShape();
+  stroke(72, 116, 99);
+  strokeWeight(1.7);
+  fill(34, 81, 73);
+  ellipseMode(CENTER);
+  ellipse(dogPos.x, dogPos.y, 12, 8);
+  arc(dogPos.x-10, dogPos.y-5, 5, 5, 0.8*PI, 0.25*PI);
+  ellipse(dogPos.x-6, dogPos.y-3, 7, 7);
+  line(dogPos.x+6, dogPos.y+3, dogPos.x+6.5, dogPos.y+6);
+  line(dogPos.x-4, dogPos.y+3, dogPos.x-4.5, dogPos.y+6);
+  line(dogPos.x-1.5, dogPos.y+4, dogPos.x-1, dogPos.y+6);
+  line(dogPos.x+3.5, dogPos.y+3, dogPos.x+4, dogPos.y+6);
+  arc(dogPos.x+9, dogPos.y-3, 7, 5, 0.15*PI, 0.75*PI);
+  arc(dogPos.x-2, dogPos.y-4, 5, 5, 1.2*PI, 0.25*PI);
+  endShape();
+  pop();
+}
+
 
 function drawFergusShip() {
   ellipseMode(CENTER);
