@@ -63,6 +63,7 @@ function drawStartScreen() {
 
   // Button
   push();
+  
   rectMode(CENTER);
   textAlign(CENTER);
   let btnX = width / 2;
