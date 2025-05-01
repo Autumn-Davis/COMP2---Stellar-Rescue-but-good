@@ -1,3 +1,12 @@
+//COLOR SCHEME:
+// 1. light orange: 242, 166, 73 (Fergus's ship)
+// 2. light orange muted: 180, 129, 37 (Fergus, dog)
+// 2. dark orange: 140, 63, 13 (Fergus's ship, Fergus, dog)
+// 3. light green: 50, 93, 65 (Void ship)
+// 4. dark green: 37, 72, 50 (Void ship)
+// 5. dark blue: 26, 40, 40 (background)
+
+
 let posI;
 let vel;
 let k;
@@ -32,10 +41,22 @@ function setup() {
   for (let i = 0; i < NUM_METEORS; i++) {
     let x = random(150, width - 150);
     let y = random(150, height - 150);
-    let w = random(50, 100);
-    let h = random(50, 100);
-    meteors.push({ x, y, w, h });
-  }
+    let r = random(30, 50); // base radius
+    let n = int(random(7, 10)); // number of sides
+    let angleOffset = random(TWO_PI);
+  
+    // makes the jagged shape:
+    let shape = [];
+    for (let j = 0; j < n; j++) {
+      let angle = map(j, 0, n, 0, TWO_PI) + angleOffset;
+      let radius = r * random(0.7, 1.2);
+      let px = radius * cos(angle);
+      let py = radius * sin(angle);
+      shape.push({ x: px, y: py });
+    }
+
+    meteors.push({ x, y, r, shape });
+}
 
   dogPos = createVector(width / 2, height / 2);
   dogVel = createVector(random(1, 2), random(1, 2));
@@ -44,7 +65,7 @@ function setup() {
 
 
 function drawStartScreen() {
-  background(26, 40, 40); // Same as your game bg
+  background(26, 40, 40); // Same as game background
 
   // Title
   push();
@@ -115,7 +136,7 @@ function draw() {
       }
     }
 
-    if (!dogRescued && dist(mouseX, mouseY, dogPos.x, dogPos.y) < 30) {
+    if (!dogRescued && mouseIsPressed && dist(mouseX, mouseY, dogPos.x, dogPos.y) < 30) {
       dogRescued = true;
     }
 
@@ -158,8 +179,8 @@ function draw() {
         push();
         fill(242, 166, 73);
         textAlign(CENTER);
-        textSize(24);
-        text("You rescued your dog!", width / 2, 50);
+        textSize(12);
+        text("You rescued your dog!", width / 2, height-50);
         pop();
       }
     }
@@ -314,9 +335,15 @@ function drawStarfield1() {
 function drawMeteors() {
   for (let meteor of meteors) {
     push();
-    fill(84, 61, 40);
-    noStroke();
-    ellipse(meteor.x + meteor.w / 2, meteor.y + meteor.h / 2, meteor.w, meteor.h);
+    translate(meteor.x, meteor.y);
+    fill(100);
+    stroke(150);
+    strokeWeight(1);
+    beginShape();
+    for (let pt of meteor.shape) {
+      vertex(pt.x, pt.y);
+    }
+    endShape(CLOSE);
     pop();
   }
 }
@@ -404,7 +431,7 @@ function moveSpaceship() {
     let toHome = createVector(50 - posI.x, 50 - posI.y).setMag(5);
     vel = toHome;
   } else if (mouseIsPressed) {
-    let toMouse = createVector(mouseX - posI.x, mouseY - posI.y).setMag(14);
+    let toMouse = createVector(mouseX - posI.x, mouseY - posI.y).setMag(10);
     vel = toMouse;
   } else {
     let toHome = createVector(50 - posI.x, 50 - posI.y).setMag(5);
@@ -467,9 +494,9 @@ function drawFergus() {
 function drawDog() {
   push();
   beginShape();
-  stroke(72, 116, 99);
+  stroke(140, 63, 13);
   strokeWeight(1.7);
-  fill(34, 81, 73);
+  fill(180, 129, 37);
   ellipseMode(CENTER);
   ellipse(dogPos.x, dogPos.y, 12, 8);
   arc(dogPos.x-10, dogPos.y-5, 5, 5, 0.8*PI, 0.25*PI);
@@ -486,31 +513,109 @@ function drawDog() {
 
 
 function drawFergusShip() {
-  ellipseMode(CENTER);
-  stroke(140, 223, 3);
-  fill(140, 63, 13);
-  ellipse(mouseX, mouseY, 50, 40);
+  push();
+    push();
+    stroke(81, 97, 94);
+    strokeWeight(2);
+    ellipseMode(CENTER);
+    fill(0,0,0);
+    ellipse (posI.x, posI.y, 45, 40)
+    pop();
+  stroke(81, 97, 94);
+  strokeWeight(0.75);
+  rectMode(CENTER);
+  fill(22, 40, 40)
+  rect(posI.x, posI.y, 10, 10);
+  arc(posI.x + 5, posI.y, 20, 10, -0.5 * PI, 0.5 * PI);
+  arc(posI.x - 5, posI.y, 20, 10, 0.5 * PI, -0.5 * PI);
   fill(81, 97, 94);
-  arc(mouseX, mouseY, 50, 40, PI, 2*PI);
-
-  //Fergus for in ship
-  push();
-  stroke(180, 129, 37);
-  strokeWeight(2);
-  fill(140, 63, 13);
-  ellipse(mouseX, mouseY, 9, 11); //body
-  line(mouseX + 5.5, mouseY, mouseX + 8, mouseY - 3);
-  line(mouseX - 5.5, mouseY, mouseX - 8, mouseY - 3);
-  line(mouseX + 5.5, mouseY + 4, mouseX + 4, mouseY + 6);
-  line(mouseX - 5.5, mouseY + 4, mouseX - 4, mouseY + 6);
-  ellipse(mouseX, mouseY - 6, 8, 9);
-  pop();
-  push();
-  stroke(180, 129, 37, 20);
-  fill(163, 201, 250, 40);
-  ellipse(mouseX, mouseY - 6, 10, 10);
+  arc(posI.x, posI.y - 5, 20, 10, PI, 0);
+  fill(37, 72, 50);
+  triangle(posI.x, posI.y + 15, posI.x + 4, posI.y + 8, posI.x - 4, posI.y + 8);
+  fill(50, 93, 65);
+  triangle(
+    posI.x + 8,
+    posI.y + 12,
+    posI.x + 10,
+    posI.y + 6,
+    posI.x + 6,
+    posI.y + 8
+  );
+  triangle(
+    posI.x - 8,
+    posI.y + 12,
+    posI.x - 10,
+    posI.y + 6,
+    posI.x - 6,
+    posI.y + 8
+  );
   pop();
 }
+
+// function drawFergusShip() {
+//   ellipseMode(CENTER);
+
+//   // Main Saucer Body
+//   push();
+//   noStroke();
+//   fill(180, 220, 255); // soft blue
+//   ellipse(mouseX, mouseY, 30, 17); // main disc
+//   pop();
+
+//   // Underglow
+//   push();
+//   noStroke();
+//   fill(255, 210, 250, 100); // soft purple glow
+//   ellipse(mouseX, mouseY + 10, 20, 5);
+//   pop();
+
+//   // Dome
+//   push();
+//   fill(255, 255, 255, 200); // semi-transparent glass
+//   stroke(180, 220, 255);
+//   strokeWeight(1);
+//   arc(mouseX, mouseY - 6, 20, 15, PI, 0);
+//   pop();
+
+
+
+//   // Fergus inside dome
+//   push();
+//   stroke(180, 129, 37);
+//   strokeWeight(2);
+//   fill(140, 63, 13);
+//   // ellipse(mouseX, mouseY - 9, 8, 10, PI, 0); // body
+//   ellipse(mouseX, mouseY - 11, 5, 6); // head
+//   pop();
+// }
+
+
+// function drawFergusShip() {
+//   ellipseMode(CENTER);
+//   stroke(140, 223, 3);
+//   fill(140, 63, 13);
+//   ellipse(mouseX, mouseY, 50, 40);
+//   fill(81, 97, 94);
+//   arc(mouseX, mouseY, 50, 40, PI, 2*PI);
+
+//   //Fergus for in ship
+//   push();
+//   stroke(180, 129, 37);
+//   strokeWeight(2);
+//   fill(140, 63, 13);
+//   ellipse(mouseX, mouseY, 9, 11); //body
+//   line(mouseX + 5.5, mouseY, mouseX + 8, mouseY - 3);
+//   line(mouseX - 5.5, mouseY, mouseX - 8, mouseY - 3);
+//   line(mouseX + 5.5, mouseY + 4, mouseX + 4, mouseY + 6);
+//   line(mouseX - 5.5, mouseY + 4, mouseX - 4, mouseY + 6);
+//   ellipse(mouseX, mouseY - 6, 8, 9);
+//   pop();
+//   push();
+//   stroke(180, 129, 37, 20);
+//   fill(163, 201, 250, 40);
+//   ellipse(mouseX, mouseY - 6, 10, 10);
+//   pop();
+// }
 
 // function drawFergusShipMoving() {
 //     ellipseMode(CENTER);
