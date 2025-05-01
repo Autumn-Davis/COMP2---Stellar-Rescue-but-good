@@ -12,6 +12,9 @@ const NUM_METEORS = 6;
 
 let isHidden = false;
 
+let dogRescued = false;
+
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
@@ -112,6 +115,10 @@ function draw() {
       }
     }
 
+    if (!dogRescued && dist(mouseX, mouseY, dogPos.x, dogPos.y) < 30) {
+      dogRescued = true;
+    }
+
     drawWinGame();
 
     if (mouseIsPressed) {
@@ -135,13 +142,26 @@ function draw() {
         fill(200, 255, 200);
         textSize(24);
         text("You are hidden!", mouseX, mouseY - 50);
+        drawDog();
+        drawMeteors();
         pop();
+      }else{
+        drawMeteors();
+        drawDog();
       }
 
       drawVoid();
 
       moveDog();
-      drawDog();
+      //drawDog();
+      if (dogRescued) {
+        push();
+        fill(242, 166, 73);
+        textAlign(CENTER);
+        textSize(24);
+        text("You rescued your dog!", width / 2, 50);
+        pop();
+      }
     }
   }
 }
@@ -394,14 +414,19 @@ function moveSpaceship() {
 }
 
 function moveDog() {
-  dogPos.add(dogVel);
+  if (!dogRescued) {
+    dogPos.add(dogVel);
 
-  // Bounce off edges
-  if (dogPos.x < 0 || dogPos.x > width) {
-    dogVel.x *= -1;
-  }
-  if (dogPos.y < 0 || dogPos.y > height) {
-    dogVel.y *= -1;
+    // Bounce off edges
+    if (dogPos.x < 0 || dogPos.x > width) {
+      dogVel.x *= -1;
+    }
+    if (dogPos.y < 0 || dogPos.y > height) {
+      dogVel.y *= -1;
+    }
+  } else {
+    dogPos.x = lerp(dogPos.x, mouseX - 8, 0.2); // smaller offset, faster follow
+    dogPos.y = lerp(dogPos.y, mouseY + 8, 0.2);
   }
 }
 
