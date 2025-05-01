@@ -11,6 +11,9 @@ let posI;
 let vel;
 let k;
 
+let shipPos;
+let shipVel;
+
 let dogPos;
 let dogVel;
 
@@ -18,6 +21,8 @@ let gameState = "start";
 
 let meteors = [];
 const NUM_METEORS = 6;
+
+let shipReleased = false;
 
 let isHidden = false;
 
@@ -60,6 +65,9 @@ function setup() {
 
   dogPos = createVector(width / 2, height / 2);
   dogVel = createVector(random(1, 2), random(1, 2));
+
+  shipPos = createVector(random(100, width - 100), random(100, height - 100));
+  shipVel = createVector(random(1, 2), random(1, 2));
 }
 
 
@@ -70,19 +78,19 @@ function drawStartScreen() {
   // Title
   push();
   textAlign(CENTER);
-  textFont("Trebuchet MS");
+  textFont("Courier New");
   fill(242, 166, 73);
-  textSize(48);
-  text("STELLAR RESCUE", width / 2, height / 4);
+  textSize(70);
+  text("S T E L L A R   R E S C U E", width / 2, height / 4);
   pop();
 
   // Instructions
   push();
   textAlign(CENTER);
-  textFont("Helvetica");
+  textFont("Trebuchet MS");
   fill(180, 129, 37);
-  textSize(20);
-  text("Help FERGUS the orange alien run away from the evil Void Reapers and get him and his dog back to their ship... \nBE CAREFUL NOT TO LET THE VOID SHIP GET TOO CLOSE TO YOU!\n", width / 2, height / 2.5);
+  textSize(18);
+  text("Help FERGUS the orange alien run away from the evil VOID REAPERS and rescue his dog. \nFergus can hide behind meteors to catch his breath, but \nBE CAREFUL NOT TO LET THE VOID SHIP GET TOO CLOSE TO YOU!.\n...\n\n Once Fergus and his dog are together, simply drag them back over to their ship to WIN!", width / 2, height / 2.5);
   //text("Help FERGUS the little green alien escape the evil VOID REAPERS and get his dog back!\nClick and hold to move.\nStay away from the VOID SHIP, and hide behind meteors to take a break.\nMake sure to KEEP AN EYE ON YOUR AIR LEVELS!\n", width / 2, height / 2.5);
   pop();
 
@@ -92,7 +100,7 @@ function drawStartScreen() {
   rectMode(CENTER);
   textAlign(CENTER);
   let btnX = width / 2;
-  let btnY = height / 1.5;
+  let btnY = height / 1.2;
   let btnW = 200;
   let btnH = 50;
 
@@ -101,10 +109,11 @@ function drawStartScreen() {
   strokeWeight(2);
   rect(btnX, btnY, btnW, btnH, 10); // rounded corners
 
-  fill(242, 166, 73);
+  fill(26, 40, 40);
   noStroke();
   textSize(24);
-  text("Start Game", btnX, btnY + 8);
+  textFont("Trebuchet MS");
+  text("START GAME", btnX, btnY + 8);
   pop();
 
   // to detect if clicked inside button
@@ -174,6 +183,9 @@ for (let meteor of meteors) {
     } else {
       drawFergusShip();
     }
+    
+    moveFergusShip();
+    drawFergusShip();
 
     if (dist(mouseX, mouseY, 50, 400) < 15){
       drawWinGame();
@@ -187,8 +199,8 @@ for (let meteor of meteors) {
       if (isHidden) {
         push();
         textAlign(CENTER);
-        fill(200, 255, 200);
-        textSize(24);
+        fill(180, 129, 37);
+        textSize(12);
         text("You are hidden!", mouseX, mouseY - 50);
         drawDog();
         drawMeteors();
@@ -207,7 +219,7 @@ for (let meteor of meteors) {
         fill(242, 166, 73);
         textAlign(CENTER);
         textSize(12);
-        text("You rescued your dog!", width / 2, height-50);
+        text("You rescued your dog!\n Now get the two of you back to your ship!", width / 2, height-50);
         pop();
       }
     }
@@ -220,27 +232,19 @@ for (let meteor of meteors) {
 const phases = [
   {
     message:
-      "Fergus: I am passing through enemy territory... there might be some hungry VOID REAPERS around.",
-    barDoodad: "👽",
-    timeout: 7 * 60,
-    kineticRate: 2,
+      "......................",
+    barDoodad: ".",
+    timeout: 5 * 60,
+    kineticRate: 0.5,
     startTime: 0,
   },
   {
     message:
-      "Ship: CRITICAL SYSTEM FAILURE, ENGINES HAVE BEEN HIT BY VOID REAPERS.",
-    barDoodad: "🚀",
+      "Ship: CRITICAL SYSTEM FAILURE! ENGINES HAVE BEEN HIT BY VOID REAPERS. PREPARE FOR IMMEDIATE SEAT EJECTION.",
+    barDoodad: "🛸",
     font: 'Courier New',
-    timeout: 6 * 60,
+    timeout: 12 * 60,
     kineticRate: 5,
-    startTime: 0,
-  },
-  {
-    message:
-      "Fergus: I am crashing! I need to evacuate NOW!  I will need your help to come up with something quickly...",
-    barDoodad: "👽",
-    timeout: 10 * 60,
-    kineticRate: 2,
     startTime: 0,
   },
   {
@@ -255,16 +259,16 @@ const phases = [
   },
   {
     message:
-      "Help FERGUS run away from the evil Void Reapers and get back to his ship... BE CAREFUL NOT TO LET THE VOID SHIP GET TOO CLOSE TO YOU!",
+      "Where am I? What happened? \nWhere is my dog?\n I need to find him and get us back to our ship!",
     font: 'Courier New',
     barDoodad: "",
-  timeout: 15*60,
+  timeout: 5*60,
   kineticRate: 3,
   startTime: 0,
   },
   {
     message:
-      "Click and hold anywhere to start playing! Remember to keep moving!",
+      "CLICK AND HOLD ANYWHERE TO START PLAYING. Remember to keep moving!",
     font: 'Courier New',
     barDoodad: "",
   timeout: 15*60,
@@ -286,8 +290,9 @@ let goToNextPhase = false;
 
 let dragging = false
 
-function mouseDragged (){
-  dragging = true
+function mouseDragged() {
+  dragging = true;
+  shipReleased = true;  // start ship bouncing once the player clicks and holds
 }
 
 function mouseClicked(){
@@ -538,102 +543,66 @@ function drawDog() {
   pop();
 }
 
-
 function drawFergusShip() {
+  let x = shipReleased ? shipPos.x : mouseX;
+  let y = shipReleased ? shipPos.y : mouseY;
+
   push();
   stroke(140, 63, 13);
   strokeWeight(0.75);
   rectMode(CENTER);
-  fill(242, 166, 73)
-  rect(mouseX, mouseY, 10, 10);
-  arc(mouseX + 5, mouseY, 20, 10, -0.5 * PI, 0.5 * PI);
-  arc(mouseX - 5, mouseY, 20, 10, 0.5 * PI, -0.5 * PI);
+  fill(242, 166, 73);
+  rect(x, y, 10, 10);
+  arc(x + 5, y, 20, 10, -0.5 * PI, 0.5 * PI);
+  arc(x - 5, y, 20, 10, 0.5 * PI, -0.5 * PI);
   fill(81, 97, 94);
-  arc(mouseX, mouseY - 5, 20, 10, PI, 0);
+  arc(x, y - 5, 20, 10, PI, 0);
   fill(255, 210, 250);
-  arc(mouseX, mouseY + 8, 5, 8, 0, PI);
-  fill(255, 210, 250);
-  arc(mouseX + 6, mouseY + 7.5, 3, 6, 0, PI);
-  arc(mouseX - 6, mouseY + 7.5, 3, 6, 0, PI);
+  arc(x, y + 8, 5, 8, 0, PI);
+  arc(x + 6, y + 7.5, 3, 6, 0, PI);
+  arc(x - 6, y + 7.5, 3, 6, 0, PI);
   pop();
-   // Underglow
+
+  // Underglow
   push();
   noStroke();
   fill(255, 210, 250, 50); // soft glow
-  ellipse(mouseX, mouseY + 10, 20, 5);
+  ellipse(x, y + 10, 20, 5);
   pop();
 }
 
 // function drawFergusShip() {
-//   ellipseMode(CENTER);
-
-//   // Main Saucer Body
 //   push();
-//   noStroke();
-//   fill(180, 220, 255); // soft blue
-//   ellipse(mouseX, mouseY, 30, 17); // main disc
-//   pop();
-
-//   // Underglow
-//   push();
-//   noStroke();
-//   fill(255, 210, 250, 100); // soft purple glow
-//   ellipse(mouseX, mouseY + 10, 20, 5);
-//   pop();
-
-//   // Dome
-//   push();
-//   fill(255, 255, 255, 200); // semi-transparent glass
-//   stroke(180, 220, 255);
-//   strokeWeight(1);
-//   arc(mouseX, mouseY - 6, 20, 15, PI, 0);
-//   pop();
-
-
-
-//   // Fergus inside dome
-//   push();
-//   stroke(180, 129, 37);
-//   strokeWeight(2);
-//   fill(140, 63, 13);
-//   // ellipse(mouseX, mouseY - 9, 8, 10, PI, 0); // body
-//   ellipse(mouseX, mouseY - 11, 5, 6); // head
-//   pop();
-// }
-
-
-// function drawFergusShip() {
-//   ellipseMode(CENTER);
-//   stroke(140, 223, 3);
-//   fill(140, 63, 13);
-//   ellipse(mouseX, mouseY, 50, 40);
+//   stroke(140, 63, 13);
+//   strokeWeight(0.75);
+//   rectMode(CENTER);
+//   fill(242, 166, 73)
+//   rect(shipPos.x, shipPos.y, 10, 10);
+//   arc(shipPos.x + 5, shipPos.y, 20, 10, -0.5 * PI, 0.5 * PI);
+//   arc(shipPos.x - 5, shipPos.y, 20, 10, 0.5 * PI, -0.5 * PI);
 //   fill(81, 97, 94);
-//   arc(mouseX, mouseY, 50, 40, PI, 2*PI);
-
-//   //Fergus for in ship
-//   push();
-//   stroke(180, 129, 37);
-//   strokeWeight(2);
-//   fill(140, 63, 13);
-//   ellipse(mouseX, mouseY, 9, 11); //body
-//   line(mouseX + 5.5, mouseY, mouseX + 8, mouseY - 3);
-//   line(mouseX - 5.5, mouseY, mouseX - 8, mouseY - 3);
-//   line(mouseX + 5.5, mouseY + 4, mouseX + 4, mouseY + 6);
-//   line(mouseX - 5.5, mouseY + 4, mouseX - 4, mouseY + 6);
-//   ellipse(mouseX, mouseY - 6, 8, 9);
+//   arc(shipPos.x, shipPos.y - 5, 20, 10, PI, 0);
+//   fill(255, 210, 250);
+//   arc(shipPos.x, shipPos.y + 8, 5, 8, 0, PI);
+//   fill(255, 210, 250);
+//   arc(shipPos.x + 6, shipPos.y + 7.5, 3, 6, 0, PI);
+//   arc(shipPos.x - 6, shipPos.y + 7.5, 3, 6, 0, PI);
 //   pop();
+//    // Underglow
 //   push();
-//   stroke(180, 129, 37, 20);
-//   fill(163, 201, 250, 40);
-//   ellipse(mouseX, mouseY - 6, 10, 10);
+//   noStroke();
+//   fill(255, 210, 250, 50); // soft glow
+//   ellipse(shipPos.x, shipPos.y + 10, 20, 5);
 //   pop();
 // }
 
-// function drawFergusShipMoving() {
-//     ellipseMode(CENTER);
-//     stroke(140, 223, 3);
-//     fill(140, 63, 13);
-//     ellipse(randomX, mouseY, 50, 40);
-//     fill(81, 97, 94);
-//     arc(randomX, mouseY, 50, 40, PI, 2*PI);
-// }
+function moveFergusShip() {
+  shipPos.add(shipVel);
+
+  if (shipPos.x < 0 || shipPos.x > width) {
+    shipVel.x *= -1;
+  }
+  if (shipPos.y < 0 || shipPos.y > height) {
+    shipVel.y *= -1;
+  }
+}
