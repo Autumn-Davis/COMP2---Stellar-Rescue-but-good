@@ -70,19 +70,20 @@ function drawStartScreen() {
   // Title
   push();
   textAlign(CENTER);
-  textFont("Courier New");
+  textFont("Trebuchet MS");
   fill(242, 166, 73);
   textSize(48);
-  text("Stellar Rescue", width / 2, height / 4);
+  text("STELLAR RESCUE", width / 2, height / 4);
   pop();
 
   // Instructions
   push();
   textAlign(CENTER);
-  textFont("Times New Roman");
-  fill(200);
+  textFont("Helvetica");
+  fill(180, 129, 37);
   textSize(20);
-  text("Help FERGUS the little green alien escape the evil VOID REAPERS and get his dog back!\nClick and hold to move.\nStay away from the VOID SHIP, and hide behind meteors to take a break.\nMake sure to KEEP AN EYE ON YOUR AIR LEVELS!\n", width / 2, height / 2.5);
+  text("Help FERGUS the orange alien run away from the evil Void Reapers and get him and his dog back to their ship... \nBE CAREFUL NOT TO LET THE VOID SHIP GET TOO CLOSE TO YOU!\n", width / 2, height / 2.5);
+  //text("Help FERGUS the little green alien escape the evil VOID REAPERS and get his dog back!\nClick and hold to move.\nStay away from the VOID SHIP, and hide behind meteors to take a break.\nMake sure to KEEP AN EYE ON YOUR AIR LEVELS!\n", width / 2, height / 2.5);
   pop();
 
   // Button
@@ -106,7 +107,7 @@ function drawStartScreen() {
   text("Start Game", btnX, btnY + 8);
   pop();
 
-  // Detect if clicked inside button
+  // to detect if clicked inside button
   if (mouseIsPressed &&
       mouseX > btnX - btnW / 2 &&
       mouseX < btnX + btnW / 2 &&
@@ -374,14 +375,14 @@ function drawMeteors() {
   }
 }
 
-function isCollidingAABB(ax, ay, aw, ah, bx, by, bw, bh) {
-  return (
-    ax < bx + bw &&
-    ax + aw > bx &&
-    ay < by + bh &&
-    ay + ah > by
-  );
-}
+// function isCollidingAABB(ax, ay, aw, ah, bx, by, bw, bh) {
+//   return (
+//     ax < bx + bw &&
+//     ax + aw > bx &&
+//     ay < by + bh &&
+//     ay + ah > by
+//   );
+// }
 
 function drawStar(x, y, radI, radO) {
   push();
@@ -540,41 +541,26 @@ function drawDog() {
 
 function drawFergusShip() {
   push();
-    push();
-    stroke(81, 97, 94);
-    strokeWeight(2);
-    ellipseMode(CENTER);
-    fill(0,0,0);
-    ellipse (posI.x, posI.y, 45, 40)
-    pop();
-  stroke(81, 97, 94);
+  stroke(140, 63, 13);
   strokeWeight(0.75);
   rectMode(CENTER);
-  fill(22, 40, 40)
-  rect(posI.x, posI.y, 10, 10);
-  arc(posI.x + 5, posI.y, 20, 10, -0.5 * PI, 0.5 * PI);
-  arc(posI.x - 5, posI.y, 20, 10, 0.5 * PI, -0.5 * PI);
+  fill(242, 166, 73)
+  rect(mouseX, mouseY, 10, 10);
+  arc(mouseX + 5, mouseY, 20, 10, -0.5 * PI, 0.5 * PI);
+  arc(mouseX - 5, mouseY, 20, 10, 0.5 * PI, -0.5 * PI);
   fill(81, 97, 94);
-  arc(posI.x, posI.y - 5, 20, 10, PI, 0);
-  fill(37, 72, 50);
-  triangle(posI.x, posI.y + 15, posI.x + 4, posI.y + 8, posI.x - 4, posI.y + 8);
-  fill(50, 93, 65);
-  triangle(
-    posI.x + 8,
-    posI.y + 12,
-    posI.x + 10,
-    posI.y + 6,
-    posI.x + 6,
-    posI.y + 8
-  );
-  triangle(
-    posI.x - 8,
-    posI.y + 12,
-    posI.x - 10,
-    posI.y + 6,
-    posI.x - 6,
-    posI.y + 8
-  );
+  arc(mouseX, mouseY - 5, 20, 10, PI, 0);
+  fill(255, 210, 250);
+  arc(mouseX, mouseY + 8, 5, 8, 0, PI);
+  fill(255, 210, 250);
+  arc(mouseX + 6, mouseY + 7.5, 3, 6, 0, PI);
+  arc(mouseX - 6, mouseY + 7.5, 3, 6, 0, PI);
+  pop();
+   // Underglow
+  push();
+  noStroke();
+  fill(255, 210, 250, 50); // soft glow
+  ellipse(mouseX, mouseY + 10, 20, 5);
   pop();
 }
 
