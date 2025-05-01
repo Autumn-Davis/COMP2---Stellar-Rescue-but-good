@@ -126,6 +126,15 @@ function drawStartScreen() {
   }
 }
 
+function drawWinScreen() {
+  background(26, 40, 40);
+  textAlign(CENTER);
+  textFont("Trebuchet MS");
+  fill(242, 166, 73);
+  textSize(48);
+  text("YOU WIN!", width / 2, height / 2);
+}
+
 
 function draw() {
   if (gameState === "start") {
@@ -175,14 +184,23 @@ for (let meteor of meteors) {
     if (!dogRescued && mouseIsPressed && dist(mouseX, mouseY, dogPos.x, dogPos.y) < 30) {
       dogRescued = true;
     }
+    if (
+      mouseIsPressed &&            // require mouse held
+      dogRescued &&                // only after dog is rescued
+      dist(mouseX, mouseY, shipPos.x, shipPos.y) < 30 &&      // Fergus near ship
+      dist(dogPos.x, dogPos.y, shipPos.x, shipPos.y) < 30     // Dog near ship
+    ) {
+      gameState = "win";
+    }
 
     drawWinGame();
 
     if (mouseIsPressed) {
       drawFergus();
-    } else {
-      drawFergusShip();
-    }
+    };
+    // } else {
+    //   drawFergusShip();
+    // }
     
     moveFergusShip();
     drawFergusShip();
@@ -223,6 +241,8 @@ for (let meteor of meteors) {
         pop();
       }
     }
+  } else if (gameState === "win") {
+    drawWinScreen();
   }
 }
 
