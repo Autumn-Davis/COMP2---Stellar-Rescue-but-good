@@ -126,15 +126,41 @@ function draw() {
     moveSpaceship();
     // to check if Fergus is hidden behind any meteor:
     isHidden = false;
-    let fergusW = 50; // ish width of Fergus's ship
-    let fergusH = 40; // ish height of Fergus's ship
 
-    for (let meteor of meteors) {
-      if (isCollidingAABB(mouseX - fergusW/2, mouseY - fergusH/2, fergusW, fergusH, meteor.x, meteor.y, meteor.w, meteor.h)) {
-        isHidden = true;
-        break; 
-      }
-    }
+let fergusW = 50;
+let fergusH = 40;
+let dogW = 18;
+let dogH = 14;
+
+for (let meteor of meteors) {
+  let meteorX = meteor.x - meteor.r;
+  let meteorY = meteor.y - meteor.r;
+  let meteorW = meteor.r * 2;
+  let meteorH = meteor.r * 2;
+
+  // AABB collision for Fergus
+  if (
+    mouseX < meteorX + meteorW &&
+    mouseX + fergusW > meteorX &&
+    mouseY < meteorY + meteorH &&
+    mouseY + fergusH > meteorY
+  ) {
+    isHidden = true;
+    break;
+  }
+
+  // AABB collision for dog
+  if (
+    dogRescued &&
+    dogPos.x < meteorX + meteorW &&
+    dogPos.x + dogW > meteorX &&
+    dogPos.y < meteorY + meteorH &&
+    dogPos.y + dogH > meteorY
+  ) {
+    isHidden = true;
+    break;
+  }
+}
 
     if (!dogRescued && mouseIsPressed && dist(mouseX, mouseY, dogPos.x, dogPos.y) < 30) {
       dogRescued = true;
@@ -318,7 +344,7 @@ function drawWinGame(){
 
 
 function drawStarfield1() {
-  let offset = width / 15;
+  let offset = width / 10;
   for (let i = 0; i < 15; i++) {
     let x = offset / 2 + i * offset;
     for (let j = 0; j < 15; j++) {
